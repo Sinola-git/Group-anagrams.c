@@ -1,0 +1,52 @@
+#include <stdlib.h>
+#include <string.h>
+
+int cmpChar(const void* a, const void* b) {
+    return (*(char*)a - *(char*)b);
+}
+
+char* sortedString(char* s) {
+    char* copy = strdup(s);
+    qsort(copy, strlen(copy), sizeof(char), cmpChar);
+    return copy;
+}
+
+char*** groupAnagrams(char** strs, int strsSize,
+                      int* returnSize, int** returnColumnSizes) {
+
+    // Maximum groups <= strsSize
+    char*** result = (char***)malloc(strsSize * sizeof(char**));
+    *returnColumnSizes = (int*)calloc(strsSize, sizeof(int));
+    *returnSize = 0;
+
+    char** keys = (char**)malloc(strsSize * sizeof(char*));
+
+    for (int i = 0; i < strsSize; i++) {
+        char* key = sortedString(strs[i]);
+        int found = -1;
+
+        // Search existing groups
+        for (int j = 0; j < *returnSize; j++) {
+            if (strcmp(keys[j], key) == 0) {
+                found = j;
+                break;
+            }
+        }
+
+        if (found == -1) {
+            // New group
+            keys[*returnSize] = key;
+            result[*returnSize] = (char**)malloc(strsSize * sizeof(char*));
+            result[*returnSize][0] = strs[i];
+            (*returnColumnSizes)[*returnSize] = 1;
+            (*returnSize)++;
+        } else {
+            // Add to existing group
+            result[found][(*returnColumnSizes)[found]++] = strs[i];
+            free(key);
+        }
+    }
+
+    free(keys);
+    return result;
+}
